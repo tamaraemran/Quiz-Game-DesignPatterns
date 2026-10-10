@@ -115,7 +115,7 @@ public class Quiz extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    // Builder Pattern: Build each question step by step
+ 
     private void loadQuestions() {
 
         questions.add(new QuestionBuilder()
