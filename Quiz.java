@@ -281,7 +281,7 @@ public class Quiz extends JFrame implements ActionListener {
         }
     }
 
-    // Original paint() and Thread.sleep() approach retained
+ 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
