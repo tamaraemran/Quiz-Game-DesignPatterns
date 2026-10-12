@@ -9,9 +9,8 @@ public class Login extends JFrame implements ActionListener{
     
     JButton rules,back;
     JTextField tfname;
-    int count;
-    Login(int count){
-        this.count=count;
+
+    Login(){
         getContentPane().setBackground(Color.WHITE);
         setTitle("Quiz Application");
         setLayout(null);
@@ -59,9 +58,12 @@ public class Login extends JFrame implements ActionListener{
     
     public void actionPerformed(ActionEvent ae){
         if(ae.getSource()==rules){
-            String name = tfname.getText();
+            // Singleton Pattern: start a fresh session and store the player's name
+            QuizSession session = QuizSession.getInstance();
+            session.reset();
+            session.setPlayerName(tfname.getText());
             setVisible(false);
-            new Rules(name,count);
+            new Rules();
         }
         else if(ae.getSource()==back){
             setVisible(false);
@@ -70,6 +72,6 @@ public class Login extends JFrame implements ActionListener{
     }
     
     public static void main(String args[]){
-        new Login(0);
+        new Login();
     }
 }
