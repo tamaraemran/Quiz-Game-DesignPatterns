@@ -6,7 +6,11 @@ import javax.swing.*;
 import java.awt.event.*;
 
 public class Score extends JFrame implements ActionListener{
-    Score(String name,int score){
+    Score(){
+        // Singleton Pattern: read name and score from the shared session
+        QuizSession session = QuizSession.getInstance();
+        String name = session.getPlayerName();
+        int score = session.getScore();
         
         setTitle("Score");
         setBounds(300,100,750,550);
@@ -44,10 +48,12 @@ public class Score extends JFrame implements ActionListener{
     
     public void actionPerformed(ActionEvent ae){
         setVisible(false);
-        new Login(0);
+        new Login();
         
     }
     public static void main(String args[]){
-        new Score("User",50);
+        QuizSession.getInstance().setPlayerName("User");
+        QuizSession.getInstance().addPoints(50);
+        new Score();
     }
 }
