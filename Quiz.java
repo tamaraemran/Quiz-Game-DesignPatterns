@@ -1,4 +1,3 @@
-
 package quiz.application;
 
 import javax.swing.*;
@@ -12,8 +11,6 @@ public class Quiz extends JFrame implements ActionListener {
     // Builder Pattern: Store Question objects instead of 2D arrays
     private final List<Question> questions = new ArrayList<>();
 
-    String useranswers[][] = new String[10][1];
-
     JLabel qno, question;
     JRadioButton opt1, opt2, opt3, opt4;
     JButton next, lifeline, submit;
@@ -21,14 +18,11 @@ public class Quiz extends JFrame implements ActionListener {
 
     public static int timer = 15;
     public static int ans_given = 0;
-    public static int score = 0;
-    public static int count = 0;
 
-    String name;
+    // Singleton Pattern: one shared session holds name, score, index and answers
+    private final QuizSession session = QuizSession.getInstance();
 
-    Quiz(String name, int count) {
-        this.name = name;
-        Quiz.count = count;
+    Quiz() {
 
         setBounds(0, 0, 1440, 800);
         getContentPane().setBackground(Color.WHITE);
@@ -110,12 +104,12 @@ public class Quiz extends JFrame implements ActionListener {
         // Create questions using Builder Pattern
         loadQuestions();
 
-        start(Quiz.count);
+        start(session.getCurrentIndex());
 
         setVisible(true);
     }
 
- 
+
     private void loadQuestions() {
 
         questions.add(new QuestionBuilder()
@@ -223,23 +217,20 @@ public class Quiz extends JFrame implements ActionListener {
 
             ans_given = 1;
 
-            if (groupoptions.getSelection() == null) {
-                useranswers[count][0] = "";
-            } else {
-                useranswers[count][0] =
-                        groupoptions.getSelection().getActionCommand();
-            }
+            session.saveAnswer(getSelectedAnswer());
 
-            if (count == 8) {
+            session.nextQuestion();
+
+            if (session.isLastQuestion()) {
                 next.setEnabled(false);
                 submit.setEnabled(true);
             }
 
-            count++;
-            start(count);
+            start(session.getCurrentIndex());
 
         } else if (ae.getSource() == lifeline) {
 
+            int count = session.getCurrentIndex();
             if (count == 2 || count == 4 || count == 6
                     || count == 8 || count == 9) {
 
@@ -258,30 +249,25 @@ public class Quiz extends JFrame implements ActionListener {
 
             ans_given = 1;
 
-            if (groupoptions.getSelection() == null) {
-                useranswers[count][0] = "";
-            } else {
-                useranswers[count][0] =
-                        groupoptions.getSelection().getActionCommand();
-            }
+            session.saveAnswer(getSelectedAnswer());
 
             // Check answers using Question objects
             for (int i = 0; i < questions.size(); i++) {
 
-                if (useranswers[i][0] != null
-                        && useranswers[i][0].equals(
+                if (session.getAnswer(i) != null
+                        && session.getAnswer(i).equals(
                                 questions.get(i).getCorrectAnswer())) {
 
-                    score += 10;
+                    session.addPoints(QuizSession.POINTS_PER_QUESTION);
                 }
             }
 
             setVisible(false);
-            new Score(name, score);
+            new Score();
         }
     }
 
- 
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
@@ -318,47 +304,46 @@ public class Quiz extends JFrame implements ActionListener {
             opt3.setEnabled(true);
             opt4.setEnabled(true);
 
-            if (count == 8) {
-                next.setEnabled(false);
-                submit.setEnabled(true);
-            }
+            if (session.isLastQuestion()) {
 
-            if (count == 9) {
-
-                if (groupoptions.getSelection() == null) {
-                    useranswers[count][0] = "";
-                } else {
-                    useranswers[count][0] =
-                            groupoptions.getSelection().getActionCommand();
-                }
+                session.saveAnswer(getSelectedAnswer());
 
                 // Check answers using Question objects
                 for (int i = 0; i < questions.size(); i++) {
 
-                    if (useranswers[i][0] != null
-                            && useranswers[i][0].equals(
+                    if (session.getAnswer(i) != null
+                            && session.getAnswer(i).equals(
                                     questions.get(i).getCorrectAnswer())) {
 
-                        score += 10;
+                        session.addPoints(QuizSession.POINTS_PER_QUESTION);
                     }
                 }
 
                 setVisible(false);
-                new Score(name, score);
+                new Score();
 
             } else {
 
-                if (groupoptions.getSelection() == null) {
-                    useranswers[count][0] = "";
-                } else {
-                    useranswers[count][0] =
-                            groupoptions.getSelection().getActionCommand();
+                session.saveAnswer(getSelectedAnswer());
+
+                session.nextQuestion();
+
+                if (session.isLastQuestion()) {
+                    next.setEnabled(false);
+                    submit.setEnabled(true);
                 }
 
-                count++;
-                start(count);
+                start(session.getCurrentIndex());
             }
         }
+    }
+
+    // Returns the selected option text, or "" if nothing is selected
+    private String getSelectedAnswer() {
+        if (groupoptions.getSelection() == null) {
+            return "";
+        }
+        return groupoptions.getSelection().getActionCommand();
     }
 
     // Display the current Question object
@@ -387,6 +372,8 @@ public class Quiz extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        new Quiz("User", 0);
+        QuizSession.getInstance().reset();
+        QuizSession.getInstance().setPlayerName("User");
+        new Quiz();
     }
 }
