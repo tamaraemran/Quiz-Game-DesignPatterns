@@ -8,13 +8,12 @@ import java.awt.event.*;
 import java.awt.*;
 
 public class Rules extends JFrame implements ActionListener{
-    String name;
     
     JButton back,start;
-    int count;
-    Rules(String name,int count){
-        this.count=count;
-        this.name=name;
+
+    Rules(){
+        // Singleton Pattern: read the player's name from the shared session
+        String name = QuizSession.getInstance().getPlayerName();
         getContentPane().setBackground(Color.WHITE);
         setLayout(null);
         setTitle("Rules");
@@ -68,13 +67,14 @@ public class Rules extends JFrame implements ActionListener{
         if(ae.getSource()== start){
             
             setVisible(false);
-            new Quiz(name,count);
+            new Quiz();
         }else{
             setVisible(false);
-            new Login(0);
+            new Login();
         }
     }
     public static void main(String args[]){
-        new Rules("User",0);
+        QuizSession.getInstance().setPlayerName("User");
+        new Rules();
     }
 }
