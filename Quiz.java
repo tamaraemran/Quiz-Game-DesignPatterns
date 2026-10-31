@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Quiz extends JFrame implements ActionListener {
 
-    // Builder Pattern: Store Question objects instead of 2D arrays
+    // Builder Pattern
     private final List<Question> questions = new ArrayList<>();
 
     JLabel qno, question;
@@ -19,8 +19,10 @@ public class Quiz extends JFrame implements ActionListener {
     public static int timer = 15;
     public static int ans_given = 0;
 
-    // Singleton Pattern: one shared session holds name, score, index and answers
+    // Singleton Pattern
     private final QuizSession session = QuizSession.getInstance();
+    // Facade Pattern
+    private final QuizFacade facade = new QuizFacade(session, questions);
 
     Quiz() {
 
@@ -149,7 +151,7 @@ public class Quiz extends JFrame implements ActionListener {
                 .build());
 
         questions.add(new QuestionBuilder()
-                .setText("In which memory a String is stored, when we create a string using new operator?")
+                .setText("In which memory a String is stored,\nwhen we create a string using new operator?")
                 .addOption("Stack")
                 .addOption("String memory")
                 .addOption("Random storage space")
@@ -216,10 +218,11 @@ public class Quiz extends JFrame implements ActionListener {
             opt4.setEnabled(true);
 
             ans_given = 1;
+// Facade Pattern: Save answer and move to next question
 
-            session.saveAnswer(getSelectedAnswer());
+            facade.saveAnswer(getSelectedAnswer());
 
-            session.nextQuestion();
+            facade.nextQuestion();
 
             if (session.isLastQuestion()) {
                 next.setEnabled(false);
@@ -248,19 +251,10 @@ public class Quiz extends JFrame implements ActionListener {
         } else if (ae.getSource() == submit) {
 
             ans_given = 1;
+// Facade Pattern: Calculate final score
+            facade.saveAnswer(getSelectedAnswer());
 
-            session.saveAnswer(getSelectedAnswer());
-
-            // Check answers using Question objects
-            for (int i = 0; i < questions.size(); i++) {
-
-                if (session.getAnswer(i) != null
-                        && session.getAnswer(i).equals(
-                                questions.get(i).getCorrectAnswer())) {
-
-                    session.addPoints(QuizSession.POINTS_PER_QUESTION);
-                }
-            }
+            facade.finishQuiz();
 
             setVisible(false);
             new Score();
@@ -306,27 +300,18 @@ public class Quiz extends JFrame implements ActionListener {
 
             if (session.isLastQuestion()) {
 
-                session.saveAnswer(getSelectedAnswer());
+                facade.saveAnswer(getSelectedAnswer());
 
-                // Check answers using Question objects
-                for (int i = 0; i < questions.size(); i++) {
-
-                    if (session.getAnswer(i) != null
-                            && session.getAnswer(i).equals(
-                                    questions.get(i).getCorrectAnswer())) {
-
-                        session.addPoints(QuizSession.POINTS_PER_QUESTION);
-                    }
-                }
+                facade.finishQuiz();
 
                 setVisible(false);
                 new Score();
 
             } else {
 
-                session.saveAnswer(getSelectedAnswer());
+                facade.saveAnswer(getSelectedAnswer());
 
-                session.nextQuestion();
+                facade.nextQuestion();
 
                 if (session.isLastQuestion()) {
                     next.setEnabled(false);
