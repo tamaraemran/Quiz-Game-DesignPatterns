@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Quiz extends JFrame implements ActionListener {
-
-    // Builder Pattern
     private final List<Question> questions = new ArrayList<>();
 
     JLabel qno, question;
@@ -19,22 +17,15 @@ public class Quiz extends JFrame implements ActionListener {
     public static int timer = 15;
     public static int ans_given = 0;
 
-    // Singleton Pattern
-    private final QuizSession session = QuizSession.getInstance();
-    // Facade Pattern
-    private final QuizFacade facade = new QuizFacade(session, questions);
+    private final QuizFacade facade =
+            new QuizFacade(QuizSession.getInstance(), questions);
 
     Quiz() {
-
         setBounds(0, 0, 1440, 800);
         getContentPane().setBackground(Color.WHITE);
         setLayout(null);
 
-        ImageIcon i1 = new ImageIcon(
-                ClassLoader.getSystemResource("Icons/quiz.jpg")
-        );
-
-        JLabel image = new JLabel(i1);
+        JLabel image = new JLabel(new ImageProxy("Icons/quiz.jpg", 1400, 350));
         image.setBounds(0, 0, 1400, 350);
         add(image);
 
@@ -103,17 +94,14 @@ public class Quiz extends JFrame implements ActionListener {
         submit.setEnabled(false);
         add(submit);
 
-        // Create questions using Builder Pattern
         loadQuestions();
 
-        start(session.getCurrentIndex());
+        showCurrentQuestion();
 
         setVisible(true);
     }
 
-
     private void loadQuestions() {
-
         questions.add(new QuestionBuilder()
                 .setText("Which is used to find and fix bugs in the Java programs.?")
                 .addOption("JVM")
@@ -207,9 +195,7 @@ public class Quiz extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-
         if (ae.getSource() == next) {
-
             repaint();
 
             opt1.setEnabled(true);
@@ -218,30 +204,26 @@ public class Quiz extends JFrame implements ActionListener {
             opt4.setEnabled(true);
 
             ans_given = 1;
-// Facade Pattern: Save answer and move to next question
 
             facade.saveAnswer(getSelectedAnswer());
 
             facade.nextQuestion();
 
-            if (session.isLastQuestion()) {
+            if (facade.isLastQuestion()) {
                 next.setEnabled(false);
                 submit.setEnabled(true);
             }
 
-            start(session.getCurrentIndex());
+            showCurrentQuestion();
 
         } else if (ae.getSource() == lifeline) {
-
-            int count = session.getCurrentIndex();
+            int count = facade.getCurrentIndex();
             if (count == 2 || count == 4 || count == 6
                     || count == 8 || count == 9) {
-
                 opt2.setEnabled(false);
                 opt3.setEnabled(false);
 
             } else {
-
                 opt1.setEnabled(false);
                 opt4.setEnabled(false);
             }
@@ -249,9 +231,8 @@ public class Quiz extends JFrame implements ActionListener {
             lifeline.setEnabled(false);
 
         } else if (ae.getSource() == submit) {
-
             ans_given = 1;
-// Facade Pattern: Calculate final score
+
             facade.saveAnswer(getSelectedAnswer());
 
             facade.finishQuiz();
@@ -260,7 +241,6 @@ public class Quiz extends JFrame implements ActionListener {
             new Score();
         }
     }
-
 
     @Override
     public void paint(Graphics g) {
@@ -290,7 +270,6 @@ public class Quiz extends JFrame implements ActionListener {
             ans_given = 0;
             timer = 15;
         } else if (timer < 0) {
-
             timer = 15;
 
             opt1.setEnabled(true);
@@ -298,8 +277,7 @@ public class Quiz extends JFrame implements ActionListener {
             opt3.setEnabled(true);
             opt4.setEnabled(true);
 
-            if (session.isLastQuestion()) {
-
+            if (facade.isLastQuestion()) {
                 facade.saveAnswer(getSelectedAnswer());
 
                 facade.finishQuiz();
@@ -308,22 +286,20 @@ public class Quiz extends JFrame implements ActionListener {
                 new Score();
 
             } else {
-
                 facade.saveAnswer(getSelectedAnswer());
 
                 facade.nextQuestion();
 
-                if (session.isLastQuestion()) {
+                if (facade.isLastQuestion()) {
                     next.setEnabled(false);
                     submit.setEnabled(true);
                 }
 
-                start(session.getCurrentIndex());
+                showCurrentQuestion();
             }
         }
     }
 
-    // Returns the selected option text, or "" if nothing is selected
     private String getSelectedAnswer() {
         if (groupoptions.getSelection() == null) {
             return "";
@@ -331,10 +307,9 @@ public class Quiz extends JFrame implements ActionListener {
         return groupoptions.getSelection().getActionCommand();
     }
 
-    // Display the current Question object
-    public void start(int count) {
-
-        Question current = questions.get(count);
+    public void showCurrentQuestion() {
+        int count = facade.getCurrentIndex();
+        Question current = facade.getCurrentQuestion();
 
         qno.setText("" + (count + 1) + ". ");
         question.setText(current.getText());
