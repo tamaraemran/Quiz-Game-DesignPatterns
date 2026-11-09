@@ -1,17 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package quiz.application;
 
-/**
- *
- * @author tamar
- */
-
 import java.util.List;
-
-// Facade Pattern: Manages quiz operations
 
 public class QuizFacade {
     private final QuizSession session;
@@ -24,12 +13,24 @@ public class QuizFacade {
         this.scoreCalculator = new ScoreCalculator();
     }
 
-    public void saveAnswer(String answer) {
-        session.saveAnswer(answer);
+    public Question getCurrentQuestion() {
+        return questions.get(session.getCurrentIndex());
+    }
+
+    public int getCurrentIndex() {
+        return session.getCurrentIndex();
+    }
+
+    public boolean isLastQuestion() {
+        return session.isLastQuestion();
     }
 
     public void nextQuestion() {
         session.nextQuestion();
+    }
+
+    public void saveAnswer(String answer) {
+        session.saveAnswer(answer);
     }
 
     public void finishQuiz() {
